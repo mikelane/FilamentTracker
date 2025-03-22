@@ -1,3 +1,4 @@
+use crate::domain::error::FilamentError;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -41,6 +42,12 @@ impl FilamentRoll {
 
 pub trait FilamentRepository {
     fn save(&self, filament: &FilamentRoll);
-    fn find_by_id(&self, id: &str) -> Option<FilamentRoll>;
-    fn update_remaining_weight(&self, id: &str, remaining_weight: f32) -> Option<FilamentRoll>;
+    fn find_by_id(&self, id: &str) -> Result<FilamentRoll, FilamentError>;
+    fn update_remaining_weight(
+        &self,
+        id: &str,
+        remaining_weight: f32,
+    ) -> Result<FilamentRoll, FilamentError>;
+    fn find_all(&self) -> Vec<FilamentRoll>;
+    fn find_by_material(&self, material: &str) -> Vec<FilamentRoll>;
 }
