@@ -22,18 +22,24 @@ impl InMemoryFilamentRepository {
 }
 
 impl FilamentRepository for InMemoryFilamentRepository {
-    fn save(&self, filament: &FilamentRoll) {
-        let mut filaments = self.filaments.lock().unwrap();
-        filaments.insert(filament.id.clone(), filament.clone());
+    fn save(&self, filament: &FilamentRoll) -> Result<(), FilamentError> {
+        let mut filaments = self.filaments.lock().map_err(|e| {
+            FilamentError::RepositoryError(format!("Failed to acquire lock: {}", e))
+        })?;
+
+        filaments.insert(filament.id().to_string(), filament.clone());
+        Ok(())
     }
 
     fn find_by_id(&self, id: &str) -> Result<FilamentRoll, FilamentError> {
-        let filaments = self.filaments.lock().unwrap();
+        let filaments = self.filaments.lock().map_err(|e| {
+            FilamentError::RepositoryError(format!("Failed to acquire lock: {}", e))
+        })?;
 
-        match filaments.get(id) {
-            Some(filament) => Ok(filament.clone()),
-            None => Err(FilamentError::NotFound(id.to_string())),
-        }
+        filaments
+            .get(id)
+            .cloned()
+            .ok_or_else(|| FilamentError::NotFound(id.to_string()))
     }
 
     fn update_remaining_weight(
@@ -41,40 +47,37 @@ impl FilamentRepository for InMemoryFilamentRepository {
         id: &str,
         remaining_weight: f32,
     ) -> Result<FilamentRoll, FilamentError> {
-        if remaining_weight < 0.0 {
-            return Err(FilamentError::InvalidData(
-                "Remaining weight cannot be negative".to_string(),
-            ));
-        }
+        let mut filaments = self.filaments.lock().map_err(|e| {
+            FilamentError::RepositoryError(format!("Failed to acquire lock: {}", e))
+        })?;
 
-        let mut filaments = self.filaments.lock().unwrap();
+        let filament = filaments
+            .get_mut(id)
+            .ok_or_else(|| FilamentError::NotFound(id.to_string()))?;
 
-        match filaments.get_mut(id) {
-            Some(filament) => {
-                if remaining_weight > filament.weight {
-                    return Err(FilamentError::InvalidData(
-                        "Remaining weight cannot exceed total weight".to_string(),
-                    ));
-                }
+        // Use domain entity method for validation and update
+        filament.update_remaining_weight(remaining_weight)?;
 
-                filament.remaining_weight = remaining_weight;
-                Ok(filament.clone())
-            }
-            None => Err(FilamentError::NotFound(id.to_string())),
-        }
+        Ok(filament.clone())
     }
 
-    fn find_all(&self) -> Vec<FilamentRoll> {
-        let filaments = self.filaments.lock().unwrap();
-        filaments.values().cloned().collect()
+    fn find_all(&self) -> Result<Vec<FilamentRoll>, FilamentError> {
+        let filaments = self.filaments.lock().map_err(|e| {
+            FilamentError::RepositoryError(format!("Failed to acquire lock: {}", e))
+        })?;
+
+        Ok(filaments.values().cloned().collect())
     }
 
-    fn find_by_material(&self, material: &str) -> Vec<FilamentRoll> {
-        let filaments = self.filaments.lock().unwrap();
-        filaments
+    fn find_by_material(&self, material: &str) -> Result<Vec<FilamentRoll>, FilamentError> {
+        let filaments = self.filaments.lock().map_err(|e| {
+            FilamentError::RepositoryError(format!("Failed to acquire lock: {}", e))
+        })?;
+
+        Ok(filaments
             .values()
-            .filter(|f| f.material == material)
+            .filter(|f| f.material() == material)
             .cloned()
-            .collect()
+            .collect())
     }
 }
