@@ -5,14 +5,15 @@ use backend::infrastructure::repositories::memory::InMemoryFilamentRepository;
 // Helper function to create a test filament with ID
 fn create_test_filament(id: &str, name: &str, material: &str) -> FilamentRoll {
     FilamentRoll::with_id(
-        id.to_string(),
-        name.to_string(),
-        material.to_string(),
-        "#000000".to_string(),
+        id,
+        name,
+        material,
+        "#000000",
         1.75,
         1000.0,
         1000.0,
-        "Test Brand".to_string(),
+        "Test Brand",
+        "Bin 1",
     )
     .expect("Failed to create test filament")
 }

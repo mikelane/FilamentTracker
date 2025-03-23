@@ -10,38 +10,41 @@ fn test_get_low_inventory_filaments() {
 
     // Create test filaments with different remaining percentages
     let filament1 = FilamentRoll::with_id(
-        "test-id-1".to_string(),
-        "Low PLA".to_string(),
-        "PLA".to_string(),
-        "#FF0000".to_string(),
+        "test-id-1",
+        "Low PLA",
+        "PLA",
+        "#FF0000",
         1.75,
         1000.0,
         150.0, // 15% remaining
-        "Brand A".to_string(),
+        "Brand A",
+        "Bin 1",
     )
     .expect("Failed to create test filament");
 
     let filament2 = FilamentRoll::with_id(
-        "test-id-2".to_string(),
-        "Medium ABS".to_string(),
-        "ABS".to_string(),
-        "#FFFFFF".to_string(),
+        "test-id-2",
+        "Medium ABS",
+        "ABS",
+        "#FFFFFF",
         1.75,
         1000.0,
         500.0, // 50% remaining
-        "Brand B".to_string(),
+        "Brand B",
+        "Bin 2",
     )
     .expect("Failed to create test filament");
 
     let filament3 = FilamentRoll::with_id(
-        "test-id-3".to_string(),
-        "Critical PETG".to_string(),
-        "PETG".to_string(),
-        "#00FF00".to_string(),
+        "test-id-3",
+        "Critical PETG",
+        "PETG",
+        "#00FF00",
         1.75,
         1000.0,
         50.0, // 5% remaining
-        "Brand C".to_string(),
+        "Brand C",
+        "Bin 3",
     )
     .expect("Failed to create test filament");
 

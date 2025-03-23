@@ -1,4 +1,4 @@
-use backend::domain::filament::{FilamentRepository, FilamentRoll};
+use backend::domain::filament::{FilamentRepository, FilamentRoll, FilamentRollBuilder};
 use backend::infrastructure::repositories::memory::InMemoryFilamentRepository;
 
 // Helper function to create a test filament with ID
@@ -8,16 +8,39 @@ fn create_test_filament(
     material: &str,
     remaining_weight: f32,
 ) -> FilamentRoll {
-    FilamentRoll::with_id(
-        id.to_string(),
+    FilamentRollBuilder::new(
         name.to_string(),
         material.to_string(),
         "#000000".to_string(),
         1.75,
         1000.0,
-        remaining_weight,
         "Test Brand".to_string(),
     )
+    .with_id(id)
+    .with_remaining_weight(remaining_weight)
+    .build()
+    .expect("Failed to create test filament")
+}
+
+fn create_test_filament_with_storage(
+    id: &str,
+    name: &str,
+    material: &str,
+    remaining_weight: f32,
+    storage_location: &str,
+) -> FilamentRoll {
+    FilamentRollBuilder::new(
+        name.to_string(),
+        material.to_string(),
+        "#000000".to_string(),
+        1.75,
+        1000.0,
+        "Test Brand".to_string(),
+    )
+    .with_id(id)
+    .with_remaining_weight(remaining_weight)
+    .with_storage_location(storage_location)
+    .build()
     .expect("Failed to create test filament")
 }
 
@@ -88,4 +111,47 @@ fn test_find_by_material() {
     assert!(pla_filaments.iter().all(|f| f.material() == "PLA"));
     assert!(pla_filaments.iter().any(|f| f.id() == "test-id-1"));
     assert!(pla_filaments.iter().any(|f| f.id() == "test-id-3"));
+}
+
+#[test]
+fn test_create_filament_with_storage_location() {
+    // Arrange
+    let storage_location = "Blue Box";
+
+    // Act
+    let filament = FilamentRollBuilder::new(
+        "Test Filament".to_string(),
+        "PLA".to_string(),
+        "#000000".to_string(),
+        1.75,
+        1000.0,
+        "Test Brand".to_string(),
+    )
+    .with_id("test-id")
+    .with_remaining_weight(1000.0)
+    .with_storage_location(storage_location)
+    .build();
+
+    // Assert
+    assert!(filament.is_ok());
+    let filament = filament.unwrap();
+    assert_eq!(filament.storage_location(), storage_location);
+}
+
+#[test]
+fn test_filament_without_storage_location() {
+    // Arrange & Act
+    let filament = FilamentRollBuilder::new(
+        "Test Filament".to_string(),
+        "PLA".to_string(),
+        "#000000".to_string(),
+        1.75,
+        1000.0,
+        "Test Brand".to_string(),
+    )
+    .build()
+    .unwrap();
+
+    // Assert
+    assert_eq!(filament.storage_location(), "");
 }
